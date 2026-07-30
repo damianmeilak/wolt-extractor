@@ -667,6 +667,9 @@ function parseAllRows(text) {
 }
 
 function parseXLSX(buffer) {
+  if (typeof XLSX === 'undefined') {
+    throw new Error('Excel reader failed to load. Refresh the page and try again.');
+  }
   const wb = XLSX.read(buffer, { type: 'array' });
   const ws = wb.Sheets[wb.SheetNames[0]];
   return XLSX.utils.sheet_to_json(ws, { header: 1, defval: null, raw: true });
