@@ -11,13 +11,13 @@
 </head>
 <body>
 <script>
-const SESSION_KEY='csv_extractor_session_v1';
+const PAGE_SESSION_KEY='csv_extractor_session_v1';
 (function(){
   try {
-    const s=sessionStorage.getItem(SESSION_KEY)||localStorage.getItem(SESSION_KEY);
+    const s=sessionStorage.getItem(PAGE_SESSION_KEY)||localStorage.getItem(PAGE_SESSION_KEY);
     if(!s){window.location.href='index.html';return;}
     const sess=JSON.parse(s);
-    if(sess.expiresAt&&Date.now()>sess.expiresAt){localStorage.removeItem(SESSION_KEY);window.location.href='index.html';return;}
+    if(sess.expiresAt&&Date.now()>sess.expiresAt){localStorage.removeItem(PAGE_SESSION_KEY);window.location.href='index.html';return;}
     document.addEventListener('DOMContentLoaded',()=>{
       const el=document.getElementById('current-username');if(el)el.textContent=sess.username;
       const b=document.getElementById('current-role-badge');if(b){b.textContent=sess.role==='admin'?'Admin':'User';b.className='role-badge '+sess.role;}
@@ -393,15 +393,15 @@ function downloadWoltCSV() {
 // ── END STEP 4 ───────────────────────────────────────────────────────────────
 
 
-function logout(){try{sessionStorage.removeItem(SESSION_KEY);localStorage.removeItem(SESSION_KEY);}catch(e){}window.location.href='index.html';}
+function logout(){try{sessionStorage.removeItem(PAGE_SESSION_KEY);localStorage.removeItem(PAGE_SESSION_KEY);}catch(e){}window.location.href='index.html';}
 window.addEventListener('DOMContentLoaded',()=>{
   try{
-    const s=sessionStorage.getItem(SESSION_KEY)||localStorage.getItem(SESSION_KEY);
+    const s=sessionStorage.getItem(PAGE_SESSION_KEY)||localStorage.getItem(PAGE_SESSION_KEY);
     if(s){const sess=JSON.parse(s);if(!sess.expiresAt||Date.now()<sess.expiresAt){
       document.getElementById('current-username').textContent=sess.username;
       const b=document.getElementById('current-role-badge');b.textContent=sess.role==='admin'?'Admin':'User';b.className='role-badge '+sess.role;
       return;
-    }else localStorage.removeItem(SESSION_KEY);}
+    }else localStorage.removeItem(PAGE_SESSION_KEY);}
   }catch(e){}
   window.location.href='index.html';
 });

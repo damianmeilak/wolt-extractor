@@ -129,8 +129,14 @@ function logout() {
     sessionStorage.removeItem(SESSION_KEY);
     localStorage.removeItem(SESSION_KEY);
   } catch(e) {}
-  document.getElementById('main-app').style.display = 'none';
-  document.getElementById('login-screen').style.display = 'flex';
+  const mainApp = document.getElementById('main-app');
+  const loginScreen = document.getElementById('login-screen');
+  if (!mainApp || !loginScreen) {
+    window.location.href = 'index.html';
+    return;
+  }
+  mainApp.style.display = 'none';
+  loginScreen.style.display = 'flex';
   document.getElementById('login-username').value = '';
   document.getElementById('login-password').value = '';
   document.getElementById('login-error').style.display = 'none';
