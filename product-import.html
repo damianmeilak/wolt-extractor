@@ -10,42 +10,43 @@
 <link rel="stylesheet" href="shared.css">
 </head>
 <body>
-
 <script>
-const SESSION_KEY = 'csv_extractor_session_v1';
-function checkSession() {
+const SESSION_KEY='csv_extractor_session_v1';
+(function(){
   try {
-    const s = sessionStorage.getItem(SESSION_KEY) || localStorage.getItem(SESSION_KEY);
-    if (!s) { window.location.href = 'index.html'; return null; }
-    const session = JSON.parse(s);
-    // Validate localStorage sessions haven't expired
-    if (session.expiresAt && Date.now() > session.expiresAt) {
-      localStorage.removeItem(SESSION_KEY);
-      window.location.href = 'index.html'; return null;
-    }
-    return session;
-  } catch(e) { window.location.href = 'index.html'; return null; }
-}
+    const s=sessionStorage.getItem(SESSION_KEY)||localStorage.getItem(SESSION_KEY);
+    if(!s){window.location.href='index.html';return;}
+    const sess=JSON.parse(s);
+    if(sess.expiresAt&&Date.now()>sess.expiresAt){localStorage.removeItem(SESSION_KEY);window.location.href='index.html';return;}
+    document.addEventListener('DOMContentLoaded',()=>{
+      const el=document.getElementById('current-username');if(el)el.textContent=sess.username;
+      const b=document.getElementById('current-role-badge');if(b){b.textContent=sess.role==='admin'?'Admin':'User';b.className='role-badge '+sess.role;}
+      // Highlight active nav button
+      const path=window.location.pathname.split('/').pop();
+      const map={'product-import.html':'import','wolt-stock-updater.html':'wolt','check-stock.html':'check'};
+      const active=map[path];
+      ['import','wolt','check'].forEach(p=>{const btn=document.getElementById('nav-btn-'+p);if(btn)btn.className='page-nav-btn'+(p===active?' active':'');});
+    });
+  } catch(e){window.location.href='index.html';}
+})();
 </script>
 <div id="app">
-    <div class="app-topbar">
+  <div class="app-topbar">
     <div class="app-topbar-user">
       <i class="ti ti-user-circle"></i>
       <span id="current-username"></span>
       <span class="role-badge" id="current-role-badge"></span>
     </div>
     <button class="logout-btn" onclick="logout()">Log out</button>
-
-    <div class="page-nav" id="page-nav">
-    <button class="page-nav-home" onclick="goHome()"><i class="ti ti-home"></i> Home</button>
-    <span class="page-nav-sep">|</span>
-    <button class="page-nav-btn" id="nav-btn-import" onclick="goPage('import')">1 &nbsp; Product Import</button>
-    <button class="page-nav-btn" id="nav-btn-wolt" onclick="goPage('wolt')">2 &nbsp; Wolt Stock Updater</button>
-    <button class="page-nav-btn" id="nav-btn-check" onclick="goPage('check')">3 &nbsp; Check Stock</button>
   </div>
-
-
-  <div class="page-desc">
+  <div class="page-nav">
+    <button class="page-nav-home" onclick="window.location.href='index.html'"><i class="ti ti-home"></i> Home</button>
+    <span class="page-nav-sep">|</span>
+    <button class="page-nav-btn" id="nav-btn-import" onclick="window.location.href='product-import.html'">1 &nbsp; Product Import</button>
+    <button class="page-nav-btn" id="nav-btn-wolt" onclick="window.location.href='wolt-stock-updater.html'">2 &nbsp; Wolt Stock Updater</button>
+    <button class="page-nav-btn" id="nav-btn-check" onclick="window.location.href='check-stock.html'">3 &nbsp; Check Stock</button>
+  </div>
+<div class="page-desc">
     <h2>1 &nbsp; Product Import</h2>
     <p>Import products from Magento, match stock by location and categories, then export them to Wolt.</p>
     <details>
@@ -106,8 +107,7 @@ function checkSession() {
     </div>
   </div>
 
-  <!-- Weight rules: now editable, saved to localStorage -->
-  <div class="mapping-collapsible" id="mapcol-weight">
+    <div class="mapping-collapsible" id="mapcol-weight">
     <div class="mapping-collapsible-header" onclick="toggleMapping('mapcol-weight')">
       <span class="mapping-collapsible-title"><i class="ti ti-scale"></i> Weight rules — 21kg keyword logic <span class="mapping-collapsible-count" id="weight-rule-count">22</span></span>
       <button id="btn-download-weight-rules" onclick="event.stopPropagation();downloadWeightRulesCSV()" style="display:none;background:#E8E5DE;border:1px solid #D0CEC8;border-radius:8px;padding:5px 12px;font-size:11px;font-weight:600;font-family:'Inter',sans-serif;color:#5a5650;cursor:pointer;margin-right:8px;" title="Export weight rules as CSV"><i class="ti ti-download" style="font-size:12px"></i> Export Rules</button>
@@ -202,8 +202,7 @@ function checkSession() {
     </div>
   </div>
 
-  <!-- Stock Threshold — admin only, shown below the upload boxes after first location completes -->
-  <div class="threshold-row" id="threshold-row" style="display:flex">
+    <div class="threshold-row" id="threshold-row" style="display:flex">
     <div class="threshold-label">
       <span>Stock Threshold</span>
       <span class="tooltip-wrap">
@@ -347,19 +346,31 @@ function checkSession() {
 
   <hr class="divider">
 
-
-
-
+  </div>
   <div class="app-footer">Damian Meilak Gouder</div>
 </div>
 <script src="shared.js"></script>
-
 <script>
-window.addEventListener('DOMContentLoaded', () => {
-  checkSession();
-  setActiveNav();
+function logout(){try{sessionStorage.removeItem(SESSION_KEY);localStorage.removeItem(SESSION_KEY);}catch(e){}window.location.href='index.html';}
+function showApp(session){
+  document.getElementById('current-username').textContent=session.username;
+  const b=document.getElementById('current-role-badge');b.textContent=session.role==='admin'?'Admin':'User';b.className='role-badge '+session.role;
+  RULES=JSON.parse(JSON.stringify(DEFAULT_RULES));
+  const saved=localStorage.getItem('csv_extractor_threshold');
+  document.getElementById('threshold-input').value=saved!==null?saved:'1';
+  const weightBtn=document.getElementById('btn-download-weight-rules');
+  if(weightBtn)weightBtn.style.display=session.role==='admin'?'inline-flex':'none';
+  const adminOnlyIds=['mapcol-1','mapcol-weight','mapcol-2','mapcol-3'];
+  adminOnlyIds.forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=session.role==='admin'?'':'none';});
+  renderRulesUI();
+}
+window.addEventListener('DOMContentLoaded',()=>{
+  try{
+    const s=sessionStorage.getItem(SESSION_KEY)||localStorage.getItem(SESSION_KEY);
+    if(s){const sess=JSON.parse(s);if(!sess.expiresAt||Date.now()<sess.expiresAt){showApp(sess);return;}else localStorage.removeItem(SESSION_KEY);}
+  }catch(e){}
+  window.location.href='index.html';
 });
+function resetAll(){resetStep1();}
 </script>
-</body>
-</html>
-</html>
+</body></html>

@@ -1,20 +1,3 @@
-
-// ── PAGE NAVIGATION (cross-page) ──────────────────────────────────────────
-function goHome() { window.location.href = 'index.html'; }
-function goPage(page) {
-  const pages = { import: 'product-import.html', wolt: 'wolt-stock-updater.html', check: 'check-stock.html' };
-  if (pages[page]) window.location.href = pages[page];
-}
-function setActiveNav() {
-  const path = window.location.pathname.split('/').pop() || 'index.html';
-  const map = { 'product-import.html': 'import', 'wolt-stock-updater.html': 'wolt', 'check-stock.html': 'check' };
-  const active = map[path];
-  ['import','wolt','check'].forEach(p => {
-    const btn = document.getElementById('nav-btn-' + p);
-    if (btn) btn.className = 'page-nav-btn' + (p === active ? ' active' : '');
-  });
-}
-
 // ───────────────────────────────────────────────
 // AUTHENTICATION
 // Passwords are NOT stored in plain text. Each entry below is a
