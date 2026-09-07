@@ -89,7 +89,6 @@
 <script src="shared.js"></script>
 <script>
 function showApp(session){
-  const SESSION_KEY='csv_extractor_session_v1';
   document.getElementById('login-screen').style.display='none';
   document.getElementById('home-app').style.display='block';
   document.getElementById('current-username').textContent=session.username;
@@ -106,8 +105,7 @@ function showApp(session){
   renderRulesUI();
 }
 function logout(){
-  const SESSION_KEY='csv_extractor_session_v1';
-  try{sessionStorage.removeItem(SESSION_KEY);localStorage.removeItem(SESSION_KEY);}catch(e){}
+  try{sessionStorage.removeItem('csv_extractor_session_v1');localStorage.removeItem('csv_extractor_session_v1');}catch(e){}
   document.getElementById('home-app').style.display='none';
   document.getElementById('login-screen').style.display='flex';
   document.getElementById('login-username').value='';
@@ -117,13 +115,12 @@ function logout(){
   document.getElementById('login-remember-checkbox').checked=false;
 }
 window.addEventListener('DOMContentLoaded',()=>{
-  const SESSION_KEY='csv_extractor_session_v1';
   try{
-    const s=sessionStorage.getItem(SESSION_KEY)||localStorage.getItem(SESSION_KEY);
+    const s=sessionStorage.getItem('csv_extractor_session_v1')||localStorage.getItem('csv_extractor_session_v1');
     if(s){
       const sess=JSON.parse(s);
       if(!sess.expiresAt||Date.now()<sess.expiresAt){showApp(sess);return;}
-      else localStorage.removeItem(SESSION_KEY);
+      else localStorage.removeItem('csv_extractor_session_v1');
     }
   }catch(e){}
   document.getElementById('login-screen').style.display='flex';
