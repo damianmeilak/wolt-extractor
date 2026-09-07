@@ -23,9 +23,9 @@ const PAGE_SESSION_KEY='csv_extractor_session_v1';
       const b=document.getElementById('current-role-badge');if(b){b.textContent=sess.role==='admin'?'Admin':'User';b.className='role-badge '+sess.role;}
       // Highlight active nav button
       const path=window.location.pathname.split('/').pop();
-      const map={'product-import.html':'import','wolt-stock-updater.html':'wolt','check-stock.html':'check'};
+      const map={'product-import.html':'import','wolt-stock-updater.html':'wolt','check-stock.html':'check','discount-product-groups.html':'discount'};
       const active=map[path];
-      ['import','wolt','check'].forEach(p=>{const btn=document.getElementById('nav-btn-'+p);if(btn)btn.className='page-nav-btn'+(p===active?' active':'');});
+      ['import','wolt','check','discount'].forEach(p=>{const btn=document.getElementById('nav-btn-'+p);if(btn)btn.className='page-nav-btn'+(p===active?' active':'');});
     });
   } catch(e){window.location.href='index.html';}
 })();

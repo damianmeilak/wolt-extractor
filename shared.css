@@ -93,7 +93,7 @@ input[type=file] { display: none; }
 .home-card-title { font-size: 15px; font-weight: 700; color: #1a1a1a; margin-bottom: 3px; }
 .home-card-desc { font-size: 12px; color: #7a7670; }
 .home-card-arrow { color: #9a9690; font-size: 20px; }
-.page-nav { display: flex; align-items: center; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+.page-nav { display: flex; align-items: center; gap: 6px; margin-bottom: 20px; flex-wrap: nowrap; overflow-x: auto; padding-bottom: 2px; }
 .page-nav-home { background: none; border: 1px solid #D0CEC8; border-radius: 8px; padding: 5px 12px; font-size: 12px; font-weight: 600; color: #5a5650; cursor: pointer; font-family: 'Inter',sans-serif; display: inline-flex; align-items: center; gap: 5px; transition: background 0.15s; }
 .page-nav-home:hover { background: #E8E5DE; }
 .page-nav-sep { color: #C5C2BB; font-size: 14px; }
