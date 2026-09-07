@@ -765,7 +765,7 @@ function initDZ1() {
   fi1.addEventListener('change', e => handleStep1(e.target.files[0]));
 }
 initDZ1();
-renderRulesUI();
+if (document.getElementById('weight-rule-count')) renderRulesUI();
 
 function handleStep1(file) {
   if (!file) return;
