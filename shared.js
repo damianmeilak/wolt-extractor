@@ -150,7 +150,8 @@ function logout() {
 // Restore session on page load. Checks sessionStorage first (per-tab, cleared on
 // close), then localStorage (only ever set for a remembered admin session, and
 // only honored if it hasn't passed its 2-month expiry).
-(function restoreSession() {
+// Deferred to DOMContentLoaded so showApp() defined in index.html is available.
+function restoreSession() {
   try {
     const sessionRaw = sessionStorage.getItem(SESSION_KEY);
     if (sessionRaw) {
@@ -176,7 +177,12 @@ function logout() {
       }
     }
   } catch(e) {}
-})();
+}
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', restoreSession);
+} else {
+  restoreSession();
+}
 
 const BASE_URL = 'https://intercomp.com.mt/media/catalog/product/';
 const MAX_IMAGES = 5;
