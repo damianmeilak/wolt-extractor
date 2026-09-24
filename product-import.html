@@ -165,6 +165,7 @@ const PAGE_SESSION_KEY='csv_extractor_session_v1';
         <span class="tooltip-box">LS Retail &gt; Inventory Valuation &gt; Filter Totals By: Location Filter &gt; Choose the store &gt; Microsoft Excel Document (data and layout)</span>
       </span>
       <span class="step-badge pending" id="s2-badge">Locked</span>
+      <button id="skip-1b-btn" class="btn-ghost" type="button" onclick="skipStep1B()" style="display:none;margin-left:auto">Skip Step 1B</button>
     </div>
     <div class="location-note" id="location-note" style="display:none">Upload one or both locations below. Each produces its own separate export.</div>
 
@@ -373,6 +374,27 @@ window.addEventListener('DOMContentLoaded',()=>{
   }catch(e){}
   window.location.href='index.html';
 });
-function resetAll(){resetStep1();}
+function skipStep1B(){
+  const badge=document.getElementById('s2-badge');
+  if(badge){badge.textContent='Skipped';badge.className='step-badge';}
+  const btn=document.getElementById('skip-1b-btn');
+  if(btn)btn.style.display='none';
+  if(typeof unlockStep3==='function'){unlockStep3();return;}
+  const n=document.getElementById('s3-num'),t=document.getElementById('s3-title'),b=document.getElementById('s3-badge'),dz=document.getElementById('dz3');
+  if(n)n.classList.remove('locked');
+  if(t)t.classList.remove('locked');
+  if(b){b.textContent='Waiting';b.className='step-badge pending';}
+  if(dz){dz.classList.remove('locked-zone');const icon=dz.querySelector('.dz-cloud');if(icon)icon.innerHTML='<i class="ti ti-cloud-upload"></i>';const title=dz.querySelector('.dz-title');if(title)title.textContent='Upload category file here';}
+}
+
+const skip1BObserver=new MutationObserver(()=>{
+  const badge=document.getElementById('s2-badge'),btn=document.getElementById('skip-1b-btn');
+  if(!badge||!btn)return;
+  const unlocked=badge.textContent.trim().toLowerCase()!=='locked';
+  if(unlocked&&badge.textContent.trim().toLowerCase()!=='skipped'&&badge.textContent.trim().toLowerCase()!=='done'&&badge.textContent.trim().toLowerCase()!=='complete')btn.style.display='inline-flex';
+});
+window.addEventListener('DOMContentLoaded',()=>{const badge=document.getElementById('s2-badge');if(badge)skip1BObserver.observe(badge,{childList:true,subtree:true,attributes:true});});
+
+function resetAll(){resetStep1();const btn=document.getElementById('skip-1b-btn');if(btn)btn.style.display='none';}
 </script>
 </body></html>
