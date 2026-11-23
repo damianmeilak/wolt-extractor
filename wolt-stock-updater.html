@@ -183,7 +183,7 @@ const PAGE_SESSION_KEY='csv_extractor_session_v1';
 // Output: merchant_sku | price | enabled | total
 
 const WOLT_STORAGE_KEY = 'csv_extractor_wolt_threshold';
-let woltData = { woltRows: null, stockMap: null, magentoPriceMap: null };
+let woltData = { woltRows: null, stockMap: null, magentoPriceMap: null, fileNames: {} };
 
 // Restore saved threshold on page load
 (function restoreWoltThreshold() {
@@ -237,6 +237,7 @@ function processWoltFile(id, buffer, fname) {
     return;
   }
 
+  woltData.fileNames[id] = fname;
   if (id === 'wolt') {
     // Wolt file: Col A = merchant_sku, Col B = enabled, Col C = total, Col D = price
     woltData.woltRows = allRows.slice(1).map(row => {
@@ -330,9 +331,11 @@ function resetWoltFile(id) {
   };
   if (id === 'wolt') {
     woltData.woltRows = null;
+    delete woltData.fileNames.wolt;
     resetDZ('wolt', 'Upload Wolt Export', 'Drag &amp; Drop<br>Wolt &gt; Export Listing to Google Sheets<br><span style="color:#9a9690;font-size:11px">Select: merchant_sku, inventory total, Enabled</span>');
   } else if (id === 'myexport') {
     woltData.stockMap = null;
+    delete woltData.fileNames.myexport;
     resetDZ('myexport', 'Upload Stock Export', 'Drag &amp; Drop<br>Import Inventory Valuation<br><span style="color:#9a9690;font-size:11px">Col A = merchant_sku &nbsp;·&nbsp; Col P = stock quantity</span>');
   } else if (id === 'magentoprice') {
     woltData.magentoPriceMap = null;
@@ -355,21 +358,13 @@ function rewireWoltDZ(id) {
 function downloadWoltCSV() {
   if (!woltData.woltRows || !woltData.stockMap) return;
   const threshold = getWoltThreshold();
-  const escape = v => `"${String(v).replace(/"/g,'""')}"`;
-  // Output: inventory_mode | merchant_sku | price | enabled | total
-  const header = ['inventory_mode','merchant_sku','price','enabled','total'].map(escape).join(',');
-
+  const header = ['inventory_mode','merchant_sku','price','enabled','total'];
+  const seen = new Set();
   const rows = woltData.woltRows.map(r => {
-    // Stock: from LS Retail file; fallback to Wolt original (sanitised on read)
     const rawStock = woltData.stockMap[r.sku] !== undefined ? woltData.stockMap[r.sku] : r.total;
-    // Belt-and-braces: ensure we never output False, undefined, or NaN
     const stockNum = parseFloat(rawStock);
     const stock = (isNaN(stockNum) || rawStock === false || rawStock === 'False') ? '0' : String(stockNum);
-
-    // enabled: always recalculated from threshold — never passed through from Wolt
     const enabled = threshold !== null && !isNaN(stockNum) && stockNum >= threshold ? 'TRUE' : 'FALSE';
-
-    // Price: from Magento if uploaded and found, else keep Wolt original
     let price = r.price || '';
     if (woltData.magentoPriceMap) {
       const exact = woltData.magentoPriceMap[r.sku];
@@ -380,17 +375,31 @@ function downloadWoltCSV() {
         price = woltData.magentoPriceMapNorm[norm] || r.price || '';
       }
     }
-
-    return ['inventory', r.sku, price, enabled, stock].map(escape).join(',');
+    return ['inventory', r.sku, price, enabled, stock];
+  }).filter(row => {
+    // Column B is merchant_sku. Keep the first row for each SKU.
+    const key = String(row[1]).trim();
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
   });
 
-  const blob = new Blob(['\uFEFF' + header + '\n' + rows.join('\n')], {type:'text/csv;charset=utf-8;'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'Wolt updated stock amount.csv';
-  a.click();
-  URL.revokeObjectURL(url);
+  const locations = ['Pama', 'Point', 'Marsa', 'Shoreline'];
+  const detected = new Set();
+  for (const name of [woltData.fileNames.wolt, woltData.fileNames.myexport]) {
+    if (!name) continue;
+    for (const location of locations) {
+      if (new RegExp('(^|[^a-z])' + location + '([^a-z]|$)', 'i').test(name)) detected.add(location);
+    }
+  }
+  const location = detected.size > 1 ? 'Location_Not_Correct' :
+    (detected.size === 1 ? [...detected][0] : 'Location_Not_Correct');
+  const day = new Date().getDate();
+  const filename = `${location}_${day} Updated Wolt Stock.xlsx`;
+  const worksheet = XLSX.utils.aoa_to_sheet([header, ...rows]);
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, 'Wolt Stock');
+  XLSX.writeFile(workbook, filename);
 }
 // ── END STEP 4 ───────────────────────────────────────────────────────────────
 
